@@ -1,0 +1,26 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Data (too large for git)
+data/
+*.zip
+
+# Weights (use HuggingFace instead)
+weights/
+*.pt
+*.pth
+*.ckpt
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# W&B
+wandb/

@@ -1,0 +1,22 @@
+data:
+  train_dir: "data/train"
+  val_dir: "data/val"
+  img_size: 300
+  num_workers: 4
+
+model:
+  backbone: "efficientnet_b3"
+  pretrained: true
+  dropout: 0.3
+
+training:
+  batch_size: 32
+  epochs: 25
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+  label_smoothing: 0.1
+  scheduler: "cosine"
+
+logging:
+  project: "plant-disease"
+  entity: null   # your W&B username goes here
