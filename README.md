@@ -32,3 +32,6 @@ python src/train.py
 
 ## Experiments
 W&B dashboard: https://wandb.ai/hakobyananna2002-no-company/plant-disease
+
+## Model Weights
+Download from HuggingFace: https://huggingface.co/annehakobyan/plant-disease-classifier
