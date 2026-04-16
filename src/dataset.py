@@ -1,4 +1,4 @@
-import os
+
 from pathlib import Path
 from PIL import Image
 from torch.utils.data import Dataset
@@ -6,10 +6,6 @@ import torchvision.transforms as T
 
 
 def get_transforms(img_size: int, mode: str):
-    """
-    Returns train or val transforms.
-    mode: 'train' | 'val'
-    """
     mean = [0.485, 0.456, 0.406]
     std  = [0.229, 0.224, 0.225]
 
@@ -33,35 +29,43 @@ def get_transforms(img_size: int, mode: str):
 
 
 class PlantDiseaseDataset(Dataset):
-    """
-    Loads images from a folder where each subfolder = one disease class.
-    e.g.
-        data/train/apple black rot/img001.jpg
-        data/train/bean rust/img002.jpg
-
-    Returns (image_tensor, label_index).
-    """
-
     VALID_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
 
-    def __init__(self, root_dir: str, transform=None):
+    def __init__(self, root_dir: str, transform=None, class_to_idx: dict = None):
+        """
+        Args:
+            root_dir:     folder where each subfolder = one disease class
+            transform:    image transforms
+            class_to_idx: if provided, use this fixed mapping instead of
+                          building one from root_dir. Pass train's mapping
+                          to val so indices are always consistent.
+        """
         self.root_dir  = Path(root_dir)
         self.transform = transform
-        self.samples   = []   # list of (image_path, label_idx)
+        self.samples   = []
 
-        # Build class list — sorted so index is always deterministic
-        self.classes = sorted([
-            d.name for d in self.root_dir.iterdir()
-            if d.is_dir() and not d.name.startswith(".")
-        ])
-        self.class_to_idx = {cls: idx for idx, cls in enumerate(self.classes)}
+        if class_to_idx is not None:
+            # Use the provided mapping (val uses train's mapping)
+            self.class_to_idx = class_to_idx
+            self.classes      = sorted(class_to_idx.keys())
+        else:
+            # Build mapping from scratch (train does this)
+            self.classes = sorted([
+                d.name for d in self.root_dir.iterdir()
+                if d.is_dir() and not d.name.startswith(".")
+            ])
+            self.class_to_idx = {cls: idx for idx, cls in enumerate(self.classes)}
 
-        # Collect all image paths
-        for cls in self.classes:
-            cls_dir = self.root_dir / cls
+        # Collect samples — skip classes not in the mapping
+        for cls_dir in self.root_dir.iterdir():
+            if not cls_dir.is_dir() or cls_dir.name.startswith("."):
+                continue
+            if cls_dir.name not in self.class_to_idx:
+                continue  # val class not in train — skip
+            label = self.class_to_idx[cls_dir.name]
             for img_path in cls_dir.iterdir():
                 if img_path.suffix.lower() in self.VALID_EXTENSIONS:
-                    self.samples.append((img_path, self.class_to_idx[cls]))
+                    self.samples.append((img_path, label))
 
     def __len__(self):
         return len(self.samples)
@@ -72,9 +76,3 @@ class PlantDiseaseDataset(Dataset):
         if self.transform:
             img = self.transform(img)
         return img, label
-
-    def __repr__(self):
-        return (
-            f"PlantDiseaseDataset(root='{self.root_dir}', "
-            f"classes={len(self.classes)}, samples={len(self.samples)})"
-        )
