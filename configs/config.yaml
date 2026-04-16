@@ -2,12 +2,13 @@ data:
   train_dir: "data/train"
   val_dir: "data/val"
   img_size: 300
-  num_workers: 4
+  num_workers: 2
 
 model:
   backbone: "efficientnet_b3"
   pretrained: true
   dropout: 0.3
+  num_classes: 82
 
 training:
   batch_size: 32
@@ -19,4 +20,5 @@ training:
 
 logging:
   project: "plant-disease"
-  entity: null   # your W&B username goes here
+  entity: "hakobyananna2002-no-company"
+  run_name: "efficientnet_b3_baseline"
