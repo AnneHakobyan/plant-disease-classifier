@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    font-family: Georgia, serif;
+    max-width: 750px;
+    margin: 60px auto;
+    font-size: 15px;
+    line-height: 1.8;
+    color: #222;
+  }
+  h1 { font-size: 22px; text-align: center; margin-bottom: 4px; }
+  .author { text-align: center; color: #555; margin-bottom: 30px; font-size: 14px; }
+  h2 { font-size: 16px; margin-top: 36px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+  th { background: #f0f0f0; padding: 8px 12px; text-align: left; border: 1px solid #ccc; }
+  td { padding: 8px 12px; border: 1px solid #ccc; }
+  .abstract {
+    background: #f9f9f9;
+    border-left: 3px solid #aaa;
+    padding: 12px 16px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #444;
+  }
+  @media print {
+  @page { margin: 1.5cm; }
+  a { color: #222; }
+}
+</style>
+</head>
+<body>
+
+<h1>Plant Disease Classification from Leaf Images</h1>
+<div class="author">
+  Anna Hakobyan &nbsp;|&nbsp; April 2026 &nbsp;|&nbsp;
+  <a href="https://github.com/AnneHakobyan/plant-disease-classifier">GitHub</a> &nbsp;|&nbsp;
+  <a href="https://wandb.ai/hakobyananna2002-no-company/plant-disease">W&B Experiments</a>
+</div>
+
+<div class="abstract">
+  <strong>Abstract.</strong> We present a plant disease classification system that identifies diseases from leaf images regardless of the host plant species. Using EfficientNet-B3 with transfer learning on a dataset of 7,783 images across 82 disease classes, we achieve a mean Average Precision (mAP) of 79.56% on the validation set. We report ablation experiments across three alternative architectures and one loss function variant.
+</div>
+
+<h2>1. Introduction</h2>
+<p>Plant diseases are responsible for significant crop losses worldwide. Early and accurate identification is critical for farmers, yet manual diagnosis requires expert knowledge that is often unavailable. This project addresses the problem of automated plant disease classification from leaf images.</p>
+<p>The core challenge is that the same disease can appear on different plant species — for example, late blight affects both tomatoes and potatoes. The model must therefore learn disease-discriminative visual features independently of the host plant. Given a leaf image, the system outputs only the disease name, ignoring which plant it came from.</p>
+
+<h2>2. Dataset</h2>
+<p>The dataset contains 7,783 training images and 390 validation images across 82 disease classes. Images are organized into folders named by disease only (e.g. "apple black rot", "corn rust"), making label extraction straightforward.</p>
+<p>The dataset exhibits significant class imbalance — the most frequent class (citrus canker) has 330 samples while the rarest (coffee black rot) has only 6, giving an imbalance ratio of 55:1. Additionally, 11 classes present in training have no corresponding validation samples, making it impossible to evaluate performance on those classes. The validation set is small (390 images, ~5 per class on average), meaning validation metrics carry high variance.</p>
+<p>These dataset characteristics directly influenced modeling decisions: class imbalance motivated the use of weighted loss, and the small validation set means the reported metrics should be interpreted with caution.</p>
+
+<h2>3. Methodology</h2>
+<p>A transfer learning approach was adopted using EfficientNet-B3 pretrained on ImageNet as the backbone. Transfer learning was chosen because the dataset is relatively small (7,783 images) — training a deep network from scratch on this amount of data would likely result in poor generalization. ImageNet pretraining provides strong low-level visual features (edges, textures, color patterns) that are directly useful for plant disease recognition.</p>
+<p>EfficientNet-B3 was selected after comparing multiple architectures. It offers a favorable accuracy-to-parameter ratio at 10.8M parameters, outperforming both the heavier ResNet-50 (23.7M parameters) and the lighter EfficientNet-B0 (4.1M parameters) on this task.</p>
+<p>Training used the AdamW optimizer with a cosine annealing learning rate schedule, starting at 3×10⁻⁴ and decaying to zero over 25 epochs. To address class imbalance, inverse frequency class weights were applied to the cross-entropy loss. Label smoothing (ε=0.1) was used to reduce overconfidence. Data augmentation included random resized crops, horizontal and vertical flips, color jitter, and random rotation.</p>
+
+<h2>4. Ablation Study</h2>
+<p>Four experiments were conducted to justify architectural and training choices:</p>
+<table>
+  <tr>
+    <th>Model</th>
+    <th>Params</th>
+    <th>Val Acc</th>
+    <th>Epochs</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td><strong>EfficientNet-B3 + smoothing</strong></td>
+    <td><strong>10.8M</strong></td>
+    <td><strong>78.21%</strong></td>
+    <td><strong>25</strong></td>
+    <td><strong>Primary model</strong></td>
+  </tr>
+  <tr>
+    <td>EfficientNet-B3 no smoothing</td>
+    <td>10.8M</td>
+    <td>78.46%</td>
+    <td>15</td>
+    <td>Train loss 0.10 — overconfident</td>
+  </tr>
+  <tr>
+    <td>ResNet-50</td>
+    <td>23.7M</td>
+    <td>73.85%</td>
+    <td>15</td>
+    <td>2.2x more params, worse accuracy</td>
+  </tr>
+  <tr>
+    <td>EfficientNet-B0</td>
+    <td>4.1M</td>
+    <td>72.82%</td>
+    <td>15</td>
+    <td>Lightest, 5.4% accuracy drop</td>
+  </tr>
+</table>
+<p>The no-label-smoothing variant achieved marginally higher validation accuracy (78.46% vs 78.21%) but its training loss dropped to 0.10 compared to 1.37 with smoothing, indicating severe overconfidence. On an unseen test set, the smoothed model is expected to generalize better.</p>
+
+<h2>5. Results</h2>
+<p>The primary model achieved a mean Average Precision (mAP) of 79.56% on the validation set. mAP was chosen as the primary metric as it accounts for both precision and recall across all classes and handles class imbalance more fairly than simple accuracy.</p>
+<p>Five classes achieved perfect AP of 1.0: soybean downy mildew, strawberry anthracnose, tobacco mosaic virus, wheat powdery mildew, and zucchini powdery mildew. The worst performing class was ginger leaf spot (AP=0.0152), which had only 1 validation sample — making meaningful evaluation impossible for that class. The three worst performing classes all had 1-3 validation samples, suggesting their low AP reflects dataset limitations rather than model failure.</p>
+
+<h2>6. Discussion</h2>
+<p>EfficientNet-B3 with transfer learning proved to be an effective solution for plant disease classification, achieving 79.56% mAP on 82 classes with a relatively small dataset. The main challenge was the severe class imbalance (55:1 ratio), which was partially addressed through weighted loss.</p>
+<p>The primary limitation of this work is the small and imbalanced validation set. With as few as 1 sample per class in some cases, validation metrics are unreliable for those classes. A more balanced evaluation set would give a clearer picture of true model performance.</p>
+<p>Future work could explore test-time augmentation to improve inference robustness, or semi-supervised learning to make better use of unlabeled data given the small dataset size.</p>
+
+</body>
+</html>
