@@ -27,6 +27,10 @@ idx_to_class = None
 async def load_model():
     global model, transform, idx_to_class
 
+    # Download weights from HuggingFace if not present
+    from api.download_model import download_weights
+    download_weights()
+
     # Load class map
     with open("configs/class_map.json") as f:
         class_map = json.load(f)
@@ -42,7 +46,6 @@ async def load_model():
     model.load_state_dict(torch.load("weights/best_model.pt", map_location="cpu"))
     model.eval()
 
-    # Val transform
     transform = T.Compose([
         T.Resize(330),
         T.CenterCrop(300),
@@ -51,7 +54,6 @@ async def load_model():
     ])
 
     print(f"Model loaded. {num_classes} classes.")
-
 
 @app.get("/health", summary="Health check")
 async def health():
