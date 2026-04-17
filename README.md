@@ -39,3 +39,7 @@ Download from HuggingFace: https://huggingface.co/annehakobyan/plant-disease-cla
 
 ## Live API
 Swagger UI: https://annehakobyan-plant-disease-api.hf.space/docs
+
+
+## Experiments
+W&B Report: https://api.wandb.ai/links/hakobyananna2002-no-company/hl89he24
