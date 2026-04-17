@@ -35,3 +35,7 @@ W&B dashboard: https://wandb.ai/hakobyananna2002-no-company/plant-disease
 
 ## Model Weights
 Download from HuggingFace: https://huggingface.co/annehakobyan/plant-disease-classifier
+
+
+## Live API
+Swagger UI: https://annehakobyan-plant-disease-api.hf.space/docs
