@@ -37,7 +37,7 @@
 <div class="author">
   Anna Hakobyan &nbsp;|&nbsp; April 2026 &nbsp;|&nbsp;
   <a href="https://github.com/AnneHakobyan/plant-disease-classifier">GitHub</a> &nbsp;|&nbsp;
-  <a href="https://wandb.ai/hakobyananna2002-no-company/plant-disease">W&B Experiments</a>
+  <a href="https://api.wandb.ai/links/hakobyananna2002-no-company/4gx7j8mt">W&B Experiments</a>
 </div>
 
 <div class="abstract">
@@ -55,7 +55,7 @@
 
 <h2>3. Methodology</h2>
 <p>A transfer learning approach was adopted using EfficientNet-B3 pretrained on ImageNet as the backbone. Transfer learning was chosen because the dataset is relatively small (7,783 images) — training a deep network from scratch on this amount of data would likely result in poor generalization. ImageNet pretraining provides strong low-level visual features (edges, textures, color patterns) that are directly useful for plant disease recognition.</p>
-<p>EfficientNet-B3 was selected after comparing multiple architectures. It offers a favorable accuracy-to-parameter ratio at 10.8M parameters, outperforming both the heavier ResNet-50 (23.7M parameters) and the lighter EfficientNet-B0 (4.1M parameters) on this task.</p>
+<p>EfficientNet-B3 was selected after comparing multiple architectures. It offers a favorable accuracy-to-parameter ratio at 10.8M parameters, outperforming both the heavier ResNet-50 (23.7M parameters) and the lighter EfficientNet-B0 (4.1M parameters) on this task. Given the high variance of the validation set noted in Section 2, the 5.4% gap between B0 and B3 should be interpreted cautiously; we selected B3 for its stronger generalization trajectory visible in the training curves.</p>
 <p>Training used the AdamW optimizer with a cosine annealing learning rate schedule, starting at 3×10⁻⁴ and decaying to zero over 25 epochs. To address class imbalance, inverse frequency class weights were applied to the cross-entropy loss. Label smoothing (ε=0.1) was used to reduce overconfidence. Data augmentation included random resized crops, horizontal and vertical flips, color jitter, and random rotation.</p>
 
 <h2>4. Ablation Study</h2>
@@ -97,6 +97,8 @@
     <td>Lightest, 5.4% accuracy drop</td>
   </tr>
 </table>
+  <p style="font-size:13px; color:#666;"><em>Note: Val Acc = top-1 accuracy on the validation set. Mean Average Precision (mAP = 79.56%) is computed separately and reported in Section 5.</em></p>
+
 <p>The no-label-smoothing variant achieved marginally higher validation accuracy (78.46% vs 78.21%) but its training loss dropped to 0.10 compared to 1.37 with smoothing, indicating severe overconfidence. On an unseen test set, the smoothed model is expected to generalize better.</p>
 
 <h2>5. Results</h2>
