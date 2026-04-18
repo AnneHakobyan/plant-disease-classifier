@@ -31,7 +31,7 @@ Configure hyperparameters in configs/config.yaml then run:
 python src/train.py
 
 ## Experiments
-W&B dashboard: https://wandb.ai/hakobyananna2002-no-company/plant-disease
+W&B Report: https://api.wandb.ai/links/hakobyananna2002-no-company/4gx7j8mt
 
 ## Model Weights
 Download from HuggingFace: https://huggingface.co/annehakobyan/plant-disease-classifier
